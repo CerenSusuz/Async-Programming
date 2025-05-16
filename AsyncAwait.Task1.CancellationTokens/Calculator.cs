@@ -10,16 +10,15 @@ namespace AsyncAwait.Task1.CancellationTokens
         {
             long sum = 0;
 
-            for (var i = 0; i < n; i++)
+            for (var i = 0; i <= n; i++)
             {
                 if (token.IsCancellationRequested)
                 {
-                    Console.WriteLine($"Calculation cancelled at step {i}. Restarting...");
-
-                    return sum;
+                    throw new OperationCanceledException(token);
                 }
 
-                sum = sum + (i + 1);
+                sum += i;
+
                 await Task.Delay(10, token);
             }
 
