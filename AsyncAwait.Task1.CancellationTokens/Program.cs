@@ -16,7 +16,7 @@ namespace AsyncAwait.Task1.CancellationTokens;
     {
         private static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         /// <summary>
-    /// The Main method should not be changed at all.
+        /// The Main method should not be changed at all.
         /// </summary>
         /// <param name="args"></param>
         private static void Main(string[] args)
@@ -34,6 +34,7 @@ namespace AsyncAwait.Task1.CancellationTokens;
                 if (int.TryParse(input, out var n))
                 {
                     _cancellationTokenSource.Cancel();
+                    _cancellationTokenSource.Dispose();
                     _cancellationTokenSource = new CancellationTokenSource();
 
                     CalculateSumAsync(n, _cancellationTokenSource.Token);
@@ -47,6 +48,7 @@ namespace AsyncAwait.Task1.CancellationTokens;
                 input = Console.ReadLine();
             }
 
+            _cancellationTokenSource.Dispose();
             Console.WriteLine("Press any key to continue");
             Console.ReadLine();
         }
@@ -58,9 +60,9 @@ namespace AsyncAwait.Task1.CancellationTokens;
                 Console.WriteLine($"The task for {n} started... Enter another value to cancel.");
 
                 var sum = await Calculator.CalculateAsync(n, token);
-            // todo: add code to process cancellation and uncomment this line    
-            // Console.WriteLine($"Sum for {n} cancelled...");
-            if (!token.IsCancellationRequested)
+                // todo: add code to process cancellation and uncomment this line    
+                // Console.WriteLine($"Sum for {n} cancelled...");
+                if (!token.IsCancellationRequested)
                 {
                     Console.WriteLine($"Sum for {n} = {sum}.");
                 }
