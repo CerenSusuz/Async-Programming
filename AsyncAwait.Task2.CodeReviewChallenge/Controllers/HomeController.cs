@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using AsyncAwait.Task2.CodeReviewChallenge.Models;
 using AsyncAwait.Task2.CodeReviewChallenge.Models.Support;
@@ -8,38 +9,39 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AsyncAwait.Task2.CodeReviewChallenge.Controllers;
 
-public class HomeController : Controller
-{
-    private readonly IAssistant _assistant;
-
-    private readonly IPrivacyDataService _privacyDataService;
-
-    public HomeController(IAssistant assistant, IPrivacyDataService privacyDataService)
+    public class HomeController : Controller
     {
-        _assistant = assistant ?? throw new ArgumentNullException(nameof(assistant));
-        _privacyDataService = privacyDataService ?? throw new ArgumentNullException(nameof(privacyDataService));
-    }
+        private readonly IAssistant _assistant;
+        private readonly IPrivacyDataService _privacyDataService;
 
-    public ActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(IAssistant assistant, IPrivacyDataService privacyDataService)
+        {
+            _assistant = assistant ?? throw new ArgumentNullException(nameof(assistant));
+            _privacyDataService = privacyDataService ?? throw new ArgumentNullException(nameof(privacyDataService));
+        }
 
-    public ActionResult Privacy()
-    {
-        ViewBag.Message = _privacyDataService.GetPrivacyDataAsync().Result;
-        return View();
-    }
+        public ActionResult Index()
+        {
+            return View();
+        }
 
-    public async Task<IActionResult> Help()
-    {
-        ViewBag.RequestInfo = await _assistant.RequestAssistanceAsync("guest").ConfigureAwait(false);
-        return View();
-    }
+        public async Task<ActionResult> Privacy(CancellationToken cancellationToken)
+        {
+            ViewBag.Message = await _privacyDataService.GetPrivacyDataAsync().WaitAsync(cancellationToken);
+            
+            return View();
+        }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
+        public async Task<IActionResult> Help(CancellationToken cancellationToken)
+        {
+            ViewBag.RequestInfo = await _assistant.RequestAssistanceAsync("guest").WaitAsync(cancellationToken);
+            
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
-}
